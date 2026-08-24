@@ -1,0 +1,6 @@
+{
+  "name": "EduCap+",
+  "description": "Comprehensive Study companion for Grades 11 and 12 science students, featuring NCERT keys, step-by-step author reference solutions, Biology curriculum, and interactive multiple-choice chapter quizzes for Physics, Chemistry, Biology, Computer Science, Mathematics, and English.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

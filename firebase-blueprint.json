@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "User Profile",
+      "description": "User profile containing setting preferences such as name, language, board, and grade.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The unique Firebase Auth User UID." },
+        "name": { "type": "string", "description": "Display name of the user." },
+        "language": { "type": "string", "description": "Preferred study language (e.g., English, Hindi)." },
+        "board": { "type": "string", "description": "The specific academic board (e.g., CBSE, ICSE, State Board)." },
+        "grade": { "type": "string", "description": "Grade level, either '11' or '12'." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of the last settings update." }
+      },
+      "required": ["userId", "name", "language", "board", "grade", "updatedAt"]
+    },
+    "quizHistory": {
+      "title": "Quiz History",
+      "description": "Logged details of quizzes completed by students to display progress and analytics.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner of this quiz record." },
+        "subjectId": { "type": "string", "description": "The subject identifier." },
+        "chapterId": { "type": "string", "description": "The chapter identifier." },
+        "score": { "type": "number", "description": "Number of correct answers." },
+        "totalQuestions": { "type": "number", "description": "Total number of questions in the quiz." },
+        "percentage": { "type": "number", "description": "Score percentage." },
+        "completedAt": { "type": "string", "format": "date-time", "description": "Timestamp of quiz completion." }
+      },
+      "required": ["userId", "subjectId", "chapterId", "score", "totalQuestions", "percentage", "completedAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "userProfile",
+      "description": "The central user details and settings document."
+    },
+    "users/{userId}/quizHistory/{quizId}": {
+      "schema": "quizHistory",
+      "description": "Subcollection under each user containing their historic quiz scores."
+    }
+  }
+}

@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation helper for User Profile
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'name', 'language', 'board', 'grade', 'updatedAt'])
+        && data.keys().size() == 6
+        && data.userId is string
+        && data.userId == request.auth.uid
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && data.language is string && data.language.size() >= 2 && data.language.size() <= 30
+        && data.board is string && data.board.size() >= 2 && data.board.size() <= 30
+        && data.grade is string && (data.grade == '11' || data.grade == '12')
+        && data.updatedAt == request.time;
+    }
+
+    // Validation helper for Quiz History
+    function isValidQuizHistory(data) {
+      return data.keys().hasAll(['userId', 'subjectId', 'chapterId', 'score', 'totalQuestions', 'percentage', 'completedAt'])
+        && data.keys().size() == 7
+        && data.userId is string
+        && data.userId == request.auth.uid
+        && data.subjectId is string && data.subjectId.size() <= 128
+        && data.chapterId is string && data.chapterId.size() <= 128
+        && data.score is int && data.score >= 0 && data.score <= 100
+        && data.totalQuestions is int && data.totalQuestions > 0 && data.totalQuestions <= 100
+        && data.percentage is number && data.percentage >= 0.0 && data.percentage <= 100.1
+        && data.completedAt == request.time;
+    }
+
+    // Match users/{userId}
+    match /users/{userId} {
+      allow get: if isSignedIn() && userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(userId) && userId == request.auth.uid && isValidUserProfile(incoming());
+      allow update: if isSignedIn() && isValidId(userId) && userId == request.auth.uid && isValidUserProfile(incoming());
+      allow delete: if false; // Profiles cannot be deleted from the client directly
+    }
+
+    // Match users/{userId}/quizHistory/{quizId}
+    match /users/{userId}/quizHistory/{quizId} {
+      allow get: if isSignedIn() && userId == request.auth.uid;
+      allow list: if isSignedIn() && userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(userId) && userId == request.auth.uid && isValidId(quizId) && isValidQuizHistory(incoming());
+      allow update, delete: if false; // Quiz entries are immutable once saved
+    }
+  }
+}
